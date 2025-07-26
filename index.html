@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Configurações de Serviços</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --success: #4bb543;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .result-title i {
+            margin-right: 10px;
+        }
+        
+        #facilidades, #configuracoes {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+            margin-top: 10px;
+        }
+        
+        .copy-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .copy-btn:hover {
+            background-color: #3aa142;
+        }
+        
+        .full-width {
+            grid-column: span 2;
+        }
+        
+        .optional-field {
+            opacity: 0.9;
+        }
+        
+        .optional-field label:after {
+            content: " (opcional)";
+            font-weight: normal;
+            color: var(--gray);
+        }
+        
+        .form-section {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .form-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 16px;
+        }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .service-fields {
+            display: none;
+        }
+        
+        .service-fields.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-network-wired"></i> Gerador de Configurações de Serviços</h1>
+        
+        <div class="form-group">
+            <label for="service-type">Tipo de Serviço:</label>
+            <select id="service-type" onchange="showServiceFields()">
+                <option value="">Selecione um serviço</option>
+                <option value="ipd">IP DEDICADO</option>
+                <option value="l2l">TRANSPORTE L2L</option>
+                <option value="transito-ip">TRÂNSITO IP</option>
+            </select>
+        </div>
+
+        <!-- Campos para IP Dedicado -->
+        <div id="ipd-fields" class="service-fields">
+            <div class="form-section">
+                <h3>INFORMAÇÕES BÁSICAS</h3>
+                <div class="form-group optional-field">
+                    <label for="bandwidth">Banda contratada</label>
+                    <input type="text" id="bandwidth" placeholder="Ex: 3G">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regional">Regional</label>
+                    <input type="text" id="regional" placeholder="Ex: MA.MIR.REGIONAL.MIRANDA.001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vlan-id">VLAN ID</label>
+                    <input type="number" id="vlan-id" placeholder="Ex: 2013" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="delivery-mode">Modo de Entrega</label>
+                    <select id="delivery-mode">
+                        <option value="tag">Tag</option>
+                        <option value="untag">Untag</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Descrição</label>
+                    <input type="text" id="description" placeholder="Ex: CUST.ISP.IPD.TECTEL#35043" required>
+                </div>
+                
+                <div class="form-group optional-field">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" placeholder="Informações adicionais relevantes"></textarea>
+                </div>
+            </div>
+
+            <div class="two-columns">
+                <div class="form-section">
+                    <h3>PONTA A</h3>
+                    <div class="form-group">
+                        <label for="equipment-a">Equipamento</label>
+                        <input type="text" id="equipment-a" placeholder="Ex: MA.MIR.PE.MIRANDA.001" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ip-ponta-a">IP do Equipamento</label>
+                        <input type="text" id="ip-ponta-a" placeholder="Ex: 192.168.129.41" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interface-a">Interface Física</label>
+                        <input type="text" id="interface-a" placeholder="Ex: XGE0/0/1" required>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>PONTA B</h3>
+                    <div class="form-group">
+                        <label for="equipment-b">Equipamento</label>
+                        <input type="text" id="equipment-b" placeholder="Ex: MA.PVS.PE.MILK.VILLAGE.001" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ip-ponta-b">IP do Equipamento</label>
+                        <input type="text" id="ip-ponta-b" placeholder="Ex: 192.168.190.9" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="interface-b">Interface Física</label>
+                        <input type="text" id="interface-b" placeholder="Ex: XGE0/0/1" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>CONFIGURAÇÕES DE IP</h3>
+                <div class="two-columns">
+                    <div>
+                        <div class="form-group">
+                            <label for="ipv4-megalink">IPv4 P2P Megalink</label>
+                            <input type="text" id="ipv4-megalink" placeholder="Ex: 10.0.9.9/30" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ipv4-client">IPv4 P2P Cliente</label>
+                            <input type="text" id="ipv4-client" placeholder="Ex: 10.0.9.10/30" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="form-group optional-field">
+                            <label for="ipv6-megalink">IPv6 P2P Megalink</label>
+                            <input type="text" id="ipv6-megalink" placeholder="Ex: 2804:1b10:1234::1/126">
+                        </div>
+                        
+                        <div class="form-group optional-field">
+                            <label for="ipv6-client">IPv6 P2P Cliente</label>
+                            <input type="text" id="ipv6-client" placeholder="Ex: 2804:1b10:1234::2/126">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="public-ip">IPv4 Público</label>
+                    <input type="text" id="public-ip" placeholder="Ex: 177.67.174.0/27" required>
+                </div>
+                
+                <div class="form-group optional-field">
+                    <label for="ipv6-publico">IPv6 Público</label>
+                    <input type="text" id="ipv6-publico" placeholder="Ex: 2804:1b10:1234::/48">
+                </div>
+            </div>
+        </div>
+
+        <!-- Campos para L2L -->
+        <div id="l2l-fields" class="service-fields">
+            <div class="form-section">
+                <h3>INFORMAÇÕES BÁSICAS</h3>
+                <div class="form-group">
+                    <label for="l2l-bandwidth">Banda contratada</label>
+                    <input type="text" id="l2l-bandwidth" placeholder="Ex: 1Gbps" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="l2l-regional">Regional</label>
+                    <input type="text" id="l2l-regional" placeholder="Ex: MA.MIR.REGIONAL.MIRANDA.001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="l2l-vlan-id">VLAN ID</label>
+                    <input type="number" id="l2l-vlan-id" placeholder="Ex: 2013" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="l2l-description">Descrição</label>
+                    <input type="text" id="l2l-description" placeholder="Ex: CUST.ISP.L2L.TECTEL#35043" required>
+                </div>
+                
+                <div class="form-group optional-field">
+                    <label for="l2l-observacoes">Observações</label>
+                    <textarea id="l2l-observacoes" placeholder="Informações adicionais relevantes"></textarea>
+                </div>
+            </div>
+
+            <div class="two-columns">
+                <div class="form-section">
+                    <h3>PONTA A</h3>
+                    <div class="form-group">
+                        <label for="l2l-equipment-a">Equipamento</label>
+                        <input type="text" id="l2l-equipment-a" placeholder="Ex: MA.MIR.PE.MIRANDA.001" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="l2l-ip-ponta-a">IP do Equipamento</label>
+                        <input type="text" id="l2l-ip-ponta-a" placeholder="Ex: 192.168.129.41" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="l2l-interface-a">Interface Física</label>
+                        <input type="text" id="l2l-interface-a" placeholder="Ex: XGE0/0/1" required>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>PONTA B</h3>
+                    <div class="form-group">
+                        <label for="l2l-equipment-b">Equipamento</label>
+                        <input type="text" id="l2l-equipment-b" placeholder="Ex: MA.PVS.PE.MILK.VILLAGE.001" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="l2l-ip-ponta-b">IP do Equipamento</label>
+                        <input type="text" id="l2l-ip-ponta-b" placeholder="Ex: 192.168.190.9" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="l2l-interface-b">Interface Física</label>
+                        <input type="text" id="l2l-interface-b" placeholder="Ex: XGE0/0/1" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campos para Trânsito IP -->
+        <div id="transito-ip-fields" class="service-fields">
+            <div class="form-section">
+                <h3>INFORMAÇÕES BÁSICAS</h3>
+                <div class="form-group">
+                    <label for="transito-banda">Banda contratada:</label>
+                    <input type="text" id="transito-banda" placeholder="Ex: 1Gbps" required>
+                </div>
+                <div class="form-group">
+                    <label for="transito-asn">ASN do Cliente:</label>
+                    <input type="text" id="transito-asn" placeholder="Ex: 270578" required>
+                </div>
+                <div class="form-group">
+                    <label for="transito-nome">Nome do Cliente:</label>
+                    <input type="text" id="transito-nome" placeholder="Ex: SMARTNET" required>
+                </div>
+                <div class="form-group">
+                    <label for="transito-descricao">Descrição:</label>
+                    <input type="text" id="transito-descricao" placeholder="Ex: CUST.ISP.IPT.AS270578#1234567" required>
+                </div>
+                <div class="form-group">
+                    <label for="transito-vlan-diferente">
+                        <input type="checkbox" id="transito-vlan-diferente"> Usar VLAN diferente para IPv6
+                    </label>
+                </div>
+            </div>
+
+            <div id="transito-ip-single-vlan">
+                <div class="form-section">
+                    <h3>CONFIGURAÇÕES (VLAN ÚNICA)</h3>
+                    <div class="form-group">
+                        <label for="transito-interface">Interface:</label>
+                        <input type="text" id="transito-interface" placeholder="Ex: Eth-Trunk0.4083" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transito-vlan">VLAN:</label>
+                        <input type="text" id="transito-vlan" placeholder="Ex: 4083" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transito-ipv4-megalink">IPv4 P2P Megalink:</label>
+                        <input type="text" id="transito-ipv4-megalink" placeholder="Ex: 10.8.4.125/30" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transito-ipv4-client">IPv4 P2P Cliente:</label>
+                        <input type="text" id="transito-ipv4-client" placeholder="Ex: 10.8.4.126/30" required>
+                    </div>
+                    <div class="form-group optional-field">
+                        <label for="transito-ipv6-megalink">IPv6 P2P Megalink:</label>
+                        <input type="text" id="transito-ipv6-megalink" placeholder="Ex: fec0:fffe:ffff::cd/126">
+                    </div>
+                    <div class="form-group optional-field">
+                        <label for="transito-ipv6-client">IPv6 P2P Cliente:</label>
+                        <input type="text" id="transito-ipv6-client" placeholder="Ex: fec0:fffe:ffff::ce/126">
+                    </div>
+                </div>
+            </div>
+
+            <div id="transito-ip-dual-vlan" style="display: none;">
+                <div class="two-columns">
+                    <div class="form-section">
+                        <h3>CONFIGURAÇÕES IPv4</h3>
+                        <div class="form-group">
+                            <label for="transito-interface-v4">Interface IPv4:</label>
+                            <input type="text" id="transito-interface-v4" placeholder="Ex: Eth-Trunk0.4083">
+                        </div>
+                        <div class="form-group">
+                            <label for="transito-vlan-v4">VLAN IPv4:</label>
+                            <input type="text" id="transito-vlan-v4" placeholder="Ex: 4083">
+                        </div>
+                        <div class="form-group">
+                            <label for="transito-ipv4-megalink-v4">IPv4 P2P Megalink:</label>
+                            <input type="text" id="transito-ipv4-megalink-v4" placeholder="Ex: 10.8.4.125/30">
+                        </div>
+                        <div class="form-group">
+                            <label for="transito-ipv4-client-v4">IPv4 P2P Cliente:</label>
+                            <input type="text" id="transito-ipv4-client-v4" placeholder="Ex: 10.8.4.126/30">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>CONFIGURAÇÕES IPv6</h3>
+                        <div class="form-group">
+                            <label for="transito-interface-v6">Interface IPv6:</label>
+                            <input type="text" id="transito-interface-v6" placeholder="Ex: Eth-Trunk0.4084">
+                        </div>
+                        <div class="form-group">
+                            <label for="transito-vlan-v6">VLAN IPv6:</label>
+                            <input type="text" id="transito-vlan-v6" placeholder="Ex: 4084">
+                        </div>
+                        <div class="form-group">
+                            <label for="transito-ipv6-megalink-v6">IPv6 P2P Megalink:</label>
+                            <input type="text" id="transito-ipv6-megalink-v6" placeholder="Ex: fec0:fffe:ffff::cd/126">
+                        </div>
+                        <div class="form-group">
+                            <label for="transito-ipv6-client-v6">IPv6 P2P Cliente:</label>
+                            <input type="text" id="transito-ipv6-client-v6" placeholder="Ex: fec0:fffe:ffff::ce/126">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>POLÍTICAS DE ROTEAMENTO</h3>
+                <div class="form-group">
+                    <label for="transito-lp-primary">Local Preference (Primário):</label>
+                    <input type="text" id="transito-lp-primary" value="8000" required>
+                </div>
+                <div class="form-group">
+                    <label for="transito-lp-secondary">Local Preference (Secundário):</label>
+                    <input type="text" id="transito-lp-secondary" value="7900" required>
+                </div>
+                <div class="form-group">
+                    <label for="transito-ipv4-publico">Bloco IPv4 Público:</label>
+                    <input type="text" id="transito-ipv4-publico" placeholder="Ex: 177.129.32.0/22" required>
+                </div>
+                <div class="form-group optional-field">
+                    <label for="transito-ipv6-publico">Bloco IPv6 Público:</label>
+                    <input type="text" id="transito-ipv6-publico" placeholder="Ex: 2804:6e24::/32">
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="generateConfig()">
+            <i class="fas fa-cogs"></i> Gerar Configuração e Facilidades
+        </button>
+        
+        <!-- Seção de Facilidades -->
+        <div class="result-section">
+            <div class="result-title">
+                <i class="fas fa-list-check"></i> Facilidades
+            </div>
+            <div id="facilidades">Preencha os campos e clique em "Gerar Configuração e Facilidades"</div>
+            <button class="copy-btn" onclick="copyToClipboard('facilidades')">
+                <i class="fas fa-copy"></i> Copiar Facilidades
+            </button>
+        </div>
+        
+        <!-- Seção de Configurações Técnicas -->
+        <div class="result-section">
+            <div class="result-title">
+                <i class="fas fa-terminal"></i> Configurações Técnicas
+            </div>
+            <div id="configuracoes">Preencha os campos e clique em "Gerar Configuração e Facilidades"</div>
+            <button class="copy-btn" onclick="copyToClipboard('configuracoes')">
+                <i class="fas fa-copy"></i> Copiar Configurações
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showServiceFields() {
+            const serviceType = document.getElementById("service-type").value;
+            document.querySelectorAll(".service-fields").forEach(field => {
+                field.classList.remove("active");
+            });
+            if (serviceType) {
+                document.getElementById(`${serviceType}-fields`).classList.add("active");
+            }
+        }
+
+        // Mostrar/ocultar configurações de VLAN conforme checkbox
+        document.getElementById('transito-vlan-diferente').addEventListener('change', function() {
+            const singleVlanSection = document.getElementById('transito-ip-single-vlan');
+            const dualVlanSection = document.getElementById('transito-ip-dual-vlan');
+            
+            if (this.checked) {
+                singleVlanSection.style.display = 'none';
+                dualVlanSection.style.display = 'block';
+            } else {
+                singleVlanSection.style.display = 'block';
+                dualVlanSection.style.display = 'none';
+            }
+        });
+
+        function generateConfig() {
+            const serviceType = document.getElementById("service-type").value;
+            
+            if (!serviceType) {
+                alert("Selecione um tipo de serviço!");
+                return;
+            }
+            
+            if (serviceType === "ipd") {
+                generateIPDConfig();
+            } else if (serviceType === "l2l") {
+                generateL2LConfig();
+            } else if (serviceType === "transito-ip") {
+                generateTransitoIPConfig();
+            }
+        }
+        
+        function generateIPDConfig() {
+            // Coletar valores dos campos
+            const bandwidth = document.getElementById('bandwidth').value;
+            const regional = document.getElementById('regional').value;
+            const vlanId = document.getElementById('vlan-id').value;
+            const deliveryMode = document.getElementById('delivery-mode').value;
+            const description = document.getElementById('description').value;
+            const observacoes = document.getElementById('observacoes').value;
+            
+            // Ponta A
+            const equipmentA = document.getElementById('equipment-a').value;
+            const ipPontaA = document.getElementById('ip-ponta-a').value;
+            const interfaceA = document.getElementById('interface-a').value;
+            
+            // Ponta B
+            const equipmentB = document.getElementById('equipment-b').value;
+            const ipPontaB = document.getElementById('ip-ponta-b').value;
+            const interfaceB = document.getElementById('interface-b').value;
+            
+            // Configurações de IP
+            const ipv4Megalink = document.getElementById('ipv4-megalink').value;
+            const ipv4Client = document.getElementById('ipv4-client').value;
+            const ipv6Megalink = document.getElementById('ipv6-megalink').value;
+            const ipv6Client = document.getElementById('ipv6-client').value;
+            const publicIp = document.getElementById('public-ip').value;
+            const ipv6Publico = document.getElementById('ipv6-publico').value;
+            
+            // Validar campos obrigatórios
+            const requiredFields = [
+                regional, vlanId, description,
+                equipmentA, ipPontaA, interfaceA,
+                equipmentB, ipPontaB, interfaceB,
+                ipv4Megalink, ipv4Client, publicIp
+            ];
+            
+            if (requiredFields.some(field => !field)) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            // Extrair máscara do IP Megalink
+            const ipMegalinkParts = ipv4Megalink.split('/');
+            const ipMegalinkAddress = ipMegalinkParts[0];
+            const ipMegalinkMask = ipMegalinkParts[1] ? cidrToNetmask(ipMegalinkParts[1]) : '255.255.255.252';
+            
+            // Extrair máscara do IP Público
+            const publicIpParts = publicIp.split('/');
+            const publicIpAddress = publicIpParts[0];
+            const publicIpMask = publicIpParts[1] || '27';
+            
+            // =============================================
+            // GERAR FACILIDADES
+            // =============================================
+            let facilidades = `IP DEDICADO\n\n`;
+            facilidades += `Banda contratada: ${bandwidth || 'Não especificado'}\n\n`;
+            facilidades += `Regional: ${regional}\n`;
+            facilidades += `VLAN ID: ${vlanId}\n`;
+            facilidades += `Modo de Entrega: ${deliveryMode}\n\n`;
+            
+            facilidades += `PONTA A:\n`;
+            facilidades += `Equipamento: ${equipmentA}\n`;
+            facilidades += `IP do Equipamento: ${ipPontaA}\n`;
+            facilidades += `Interface: ${interfaceA}\n\n`;
+            
+            facilidades += `PONTA B:\n`;
+            facilidades += `Equipamento: ${equipmentB}\n`;
+            facilidades += `IP do Equipamento: ${ipPontaB}\n`;
+            facilidades += `Interface: ${interfaceB}\n\n`;
+            
+            facilidades += `CONFIGURAÇÕES DE IP:\n`;
+            facilidades += `IPv4 P2P Megalink: ${ipv4Megalink}\n`;
+            facilidades += `IPv4 P2P Cliente: ${ipv4Client}\n`;
+            if (ipv6Megalink) facilidades += `IPv6 P2P Megalink: ${ipv6Megalink}\n`;
+            if (ipv6Client) facilidades += `IPv6 P2P Cliente: ${ipv6Client}\n`;
+            facilidades += `IP Público IPv4: ${publicIp}\n`;
+            if (ipv6Publico) facilidades += `IP Público IPv6: ${ipv6Publico}\n\n`;
+            
+            facilidades += `Descrição: ${description}`;
+            
+            if (observacoes) {
+                facilidades += `\n\nObservações:\n${observacoes}`;
+            }
+            
+            // =============================================
+            // GERAR CONFIGURAÇÕES TÉCNICAS (Huawei)
+            // =============================================
+            let configuracoes = `\t-----------------------------------------------------CONFIGURAÇÕES REALIZADAS--------------------------------------
+Regional: ${regional}
+
+VLAN: ${vlanId}
+
+INTERFACE VIRTUAL:
+
+interface Eth-Trunk0.${vlanId}
+ vlan-type dot1q ${vlanId}
+ description ${description}
+ ipv6 enable
+ ip address ${ipMegalinkAddress} ${ipMegalinkMask}`;
+
+            // Adicionar configuração IPv6 se informado
+            if (ipv6Megalink) {
+                configuracoes += `\n ipv6 address ${ipv6Megalink}`;
+            }
+
+            configuracoes += `\n ipv6 urpf loose allow-default
+
+ROTAS ESTATICAS:
+ip route-static ${publicIpAddress} ${publicIpMask} ${ipv4Client.split('/')[0]} des ${description}`;
+
+            // Adicionar rota estática IPv6 se informado
+            if (ipv6Publico && ipv6Client) {
+                const ipv6PublicoParts = ipv6Publico.split('/');
+                const ipv6PublicoAddress = ipv6PublicoParts[0];
+                const ipv6PublicoMask = ipv6PublicoParts[1] || '48';
+                const ipv6ClientAddress = ipv6Client.split('/')[0];
+                
+                configuracoes += `\nipv6 route-static ${ipv6PublicoAddress} ${ipv6PublicoMask} ${ipv6ClientAddress} des ${description}`;
+            }
+
+            configuracoes += `\n------------------------------------------------------------------------------------------------------------------------
+Equipamento Ponta A: ${equipmentA}
+
+VLAN:
+
+vlan ${vlanId}
+ description ${description}
+
+
+INTERFACE VIRTUAL:
+
+interface Vlanif${vlanId}
+ description ${description}
+ mpls l2vc ${ipPontaB} ${vlanId}
+ mpls l2vpn flow-label both
+ statistics enable
+
+INTERFACE FISICA:
+interface ${interfaceA}
+ port trunk allow-pass vlan ${vlanId}
+------------------------------------------------------------------------------------------------------------------------
+Equipamento Ponta B: ${equipmentB}
+
+VLAN:
+vlan ${vlanId}
+ description ${description}
+
+INTERFACE VIRTUAL:
+
+interface Vlanif${vlanId}
+ description ${description}
+ mpls l2vc ${ipPontaA} ${vlanId}
+ mpls l2vpn flow-label both
+ statistic enable both
+
+
+INTERFACE FISICA:
+interface ${interfaceB}
+ port trunk allow-pass vlan ${vlanId}`;
+
+            // Exibir resultados
+            document.getElementById('facilidades').textContent = facilidades;
+            document.getElementById('configuracoes').textContent = configuracoes;
+        }
+        
+        function generateL2LConfig() {
+            // Coletar valores dos campos
+            const bandwidth = document.getElementById('l2l-bandwidth').value;
+            const regional = document.getElementById('l2l-regional').value;
+            const vlanId = document.getElementById('l2l-vlan-id').value;
+            const description = document.getElementById('l2l-description').value;
+            const observacoes = document.getElementById('l2l-observacoes').value;
+            
+            // Ponta A
+            const equipmentA = document.getElementById('l2l-equipment-a').value;
+            const ipPontaA = document.getElementById('l2l-ip-ponta-a').value;
+            const interfaceA = document.getElementById('l2l-interface-a').value;
+            
+            // Ponta B
+            const equipmentB = document.getElementById('l2l-equipment-b').value;
+            const ipPontaB = document.getElementById('l2l-ip-ponta-b').value;
+            const interfaceB = document.getElementById('l2l-interface-b').value;
+            
+            // Validar campos obrigatórios
+            const requiredFields = [
+                bandwidth, regional, vlanId, description,
+                equipmentA, ipPontaA, interfaceA,
+                equipmentB, ipPontaB, interfaceB
+            ];
+            
+            if (requiredFields.some(field => !field)) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+            
+            // =============================================
+            // GERAR FACILIDADES
+            // =============================================
+            let facilidades = `TRANSPORTE L2L\n\n`;
+            facilidades += `Banda contratada: ${bandwidth}\n\n`;
+            facilidades += `Regional: ${regional}\n`;
+            facilidades += `VLAN ID: ${vlanId}\n\n`;
+            
+            facilidades += `PONTA A:\n`;
+            facilidades += `Equipamento: ${equipmentA}\n`;
+            facilidades += `IP do Equipamento: ${ipPontaA}\n`;
+            facilidades += `Interface: ${interfaceA}\n\n`;
+            
+            facilidades += `PONTA B:\n`;
+            facilidades += `Equipamento: ${equipmentB}\n`;
+            facilidades += `IP do Equipamento: ${ipPontaB}\n`;
+            facilidades += `Interface: ${interfaceB}\n\n`;
+            
+            facilidades += `Descrição: ${description}`;
+            
+            if (observacoes) {
+                facilidades += `\n\nObservações:\n${observacoes}`;
+            }
+            
+            // =============================================
+            // GERAR CONFIGURAÇÕES TÉCNICAS (Huawei)
+            // =============================================
+            let configuracoes = `\t-----------------------------------------------------CONFIGURAÇÕES REALIZADAS--------------------------------------
+Regional: ${regional}
+
+VLAN: ${vlanId}
+
+------------------------------------------------------------------------------------------------------------------------
+Equipamento Ponta A: ${equipmentA}
+
+VLAN:
+
+vlan ${vlanId}
+ description ${description}
+
+
+INTERFACE VIRTUAL:
+
+interface Vlanif${vlanId}
+ description ${description}
+ mpls l2vc ${ipPontaB} ${vlanId}
+ mpls l2vpn flow-label both
+ statistics enable
+
+INTERFACE FISICA:
+interface ${interfaceA}
+ port trunk allow-pass vlan ${vlanId}
+------------------------------------------------------------------------------------------------------------------------
+Equipamento Ponta B: ${equipmentB}
+
+VLAN:
+vlan ${vlanId}
+ description ${description}
+
+INTERFACE VIRTUAL:
+
+interface Vlanif${vlanId}
+ description ${description}
+ mpls l2vc ${ipPontaA} ${vlanId}
+ mpls l2vpn flow-label both
+ statistic enable both
+
+
+INTERFACE FISICA:
+interface ${interfaceB}
+ port trunk allow-pass vlan ${vlanId}`;
+
+            // Exibir resultados
+            document.getElementById('facilidades').textContent = facilidades;
+            document.getElementById('configuracoes').textContent = configuracoes;
+        }
+        
+        function generateTransitoIPConfig() {
+            // Coletar valores dos campos
+            const banda = document.getElementById('transito-banda').value;
+            const asn = document.getElementById('transito-asn').value;
+            const nomeCliente = document.getElementById('transito-nome').value;
+            const descricao = document.getElementById('transito-descricao').value;
+            const vlanDiferente = document.getElementById('transito-vlan-diferente').checked;
+            const lpPrimary = document.getElementById('transito-lp-primary').value;
+            const lpSecondary = document.getElementById('transito-lp-secondary').value;
+            const ipv4Publico = document.getElementById('transito-ipv4-publico').value;
+            const ipv6Publico = document.getElementById('transito-ipv6-publico').value;
+            
+            // Configurações para VLAN única ou separadas
+            let interface, vlan, ipv4Megalink, ipv4Client, ipv6Megalink, ipv6Client;
+            let interfaceV4, vlanV4, ipv4MegalinkV4, ipv4ClientV4;
+            let interfaceV6, vlanV6, ipv6MegalinkV6, ipv6ClientV6;
+            
+            if (vlanDiferente) {
+                interfaceV4 = document.getElementById('transito-interface-v4').value;
+                vlanV4 = document.getElementById('transito-vlan-v4').value;
+                ipv4MegalinkV4 = document.getElementById('transito-ipv4-megalink-v4').value;
+                ipv4ClientV4 = document.getElementById('transito-ipv4-client-v4').value;
+                
+                interfaceV6 = document.getElementById('transito-interface-v6').value;
+                vlanV6 = document.getElementById('transito-vlan-v6').value;
+                ipv6MegalinkV6 = document.getElementById('transito-ipv6-megalink-v6').value;
+                ipv6ClientV6 = document.getElementById('transito-ipv6-client-v6').value;
+            } else {
+                interface = document.getElementById('transito-interface').value;
+                vlan = document.getElementById('transito-vlan').value;
+                ipv4Megalink = document.getElementById('transito-ipv4-megalink').value;
+                ipv4Client = document.getElementById('transito-ipv4-client').value;
+                ipv6Megalink = document.getElementById('transito-ipv6-megalink').value;
+                ipv6Client = document.getElementById('transito-ipv6-client').value;
+            }
+
+            // Validar campos obrigatórios
+            let requiredFields = [banda, asn, nomeCliente, descricao, lpPrimary, lpSecondary, ipv4Publico];
+            
+            if (vlanDiferente) {
+                requiredFields = requiredFields.concat([
+                    interfaceV4, vlanV4, ipv4MegalinkV4, ipv4ClientV4,
+                    interfaceV6, vlanV6, ipv6MegalinkV6, ipv6ClientV6
+                ]);
+            } else {
+                requiredFields = requiredFields.concat([
+                    interface, vlan, ipv4Megalink, ipv4Client
+                ]);
+            }
+            
+            if (requiredFields.some(field => !field)) {
+                alert('Por favor, preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            // =============================================
+            // GERAR FACILIDADES
+            // =============================================
+            let facilidades = `TRÂNSITO IP\n\n`;
+            facilidades += `Banda contratada: ${banda}\n`;
+            facilidades += `ASN do Cliente: ${asn}\n`;
+            facilidades += `Nome do Cliente: ${nomeCliente}\n\n`;
+            
+            if (vlanDiferente) {
+                facilidades += `CONFIGURAÇÕES IPv4:\n`;
+                facilidades += `Interface: ${interfaceV4}\n`;
+                facilidades += `VLAN: ${vlanV4}\n`;
+                facilidades += `IPv4 P2P Megalink: ${ipv4MegalinkV4}\n`;
+                facilidades += `IPv4 P2P Cliente: ${ipv4ClientV4}\n\n`;
+                
+                facilidades += `CONFIGURAÇÕES IPv6:\n`;
+                facilidades += `Interface: ${interfaceV6}\n`;
+                facilidades += `VLAN: ${vlanV6}\n`;
+                facilidades += `IPv6 P2P Megalink: ${ipv6MegalinkV6}\n`;
+                facilidades += `IPv6 P2P Cliente: ${ipv6ClientV6}\n\n`;
+            } else {
+                facilidades += `CONFIGURAÇÕES:\n`;
+                facilidades += `Interface: ${interface}\n`;
+                facilidades += `VLAN: ${vlan}\n`;
+                facilidades += `IPv4 P2P Megalink: ${ipv4Megalink}\n`;
+                facilidades += `IPv4 P2P Cliente: ${ipv4Client}\n`;
+                if (ipv6Megalink) facilidades += `IPv6 P2P Megalink: ${ipv6Megalink}\n`;
+                if (ipv6Client) facilidades += `IPv6 P2P Cliente: ${ipv6Client}\n\n`;
+            }
+            
+            facilidades += `Bloco IPv4 Público: ${ipv4Publico}\n`;
+            if (ipv6Publico) facilidades += `Bloco IPv6 Público: ${ipv6Publico}\n`;
+            
+            facilidades += `Local Preference: Primário ${lpPrimary} | Secundário ${lpSecondary}\n\n`;
+            facilidades += `Descrição: ${descricao}`;
+
+            // =============================================
+            // GERAR CONFIGURAÇÕES TÉCNICAS
+            // =============================================
+            let configuracoes = '';
+            
+            // Configuração de interfaces
+            if (vlanDiferente) {
+                configuracoes += `interface ${interfaceV4}\n`;
+                configuracoes += ` vlan-type dot1q ${vlanV4}\n`;
+                configuracoes += ` description ${descricao} - IPv4\n`;
+                configuracoes += ` ip address ${ipv4MegalinkV4}\n`;
+                configuracoes += ` statistic enable\n`;
+                configuracoes += ` ip urpf loose allow-default\n`;
+                configuracoes += ` tcp adjust-mss 1400 inbound\n\n`;
+                
+                configuracoes += `interface ${interfaceV6}\n`;
+                configuracoes += ` vlan-type dot1q ${vlanV6}\n`;
+                configuracoes += ` description ${descricao} - IPv6\n`;
+                configuracoes += ` ipv6 enable\n`;
+                configuracoes += ` ipv6 address ${ipv6MegalinkV6}\n`;
+                configuracoes += ` statistic enable\n`;
+                configuracoes += ` ipv6 urpf loose allow-default\n`;
+                configuracoes += ` tcp adjust-mss 1400 inbound\n\n`;
+            } else {
+                configuracoes += `interface ${interface}\n`;
+                configuracoes += ` vlan-type dot1q ${vlan}\n`;
+                configuracoes += ` description ${descricao}\n`;
+                configuracoes += ` ipv6 enable\n`;
+                configuracoes += ` ip address ${ipv4Megalink}\n`;
+                if (ipv6Megalink) {
+                    configuracoes += ` ipv6 address ${ipv6Megalink}\n`;
+                }
+                configuracoes += ` statistic enable\n`;
+                configuracoes += ` ip urpf loose allow-default\n`;
+                if (ipv6Megalink) {
+                    configuracoes += ` ipv6 urpf loose allow-default\n`;
+                }
+                configuracoes += ` tcp adjust-mss 1400 inbound\n\n`;
+            }
+            
+            // Prefix-lists
+            const ipv4PublicoParts = ipv4Publico.split('/');
+            const ipv4PublicoAddress = ipv4PublicoParts[0];
+            const ipv4PublicoMask = ipv4PublicoParts[1] || '22';
+            
+            configuracoes += `ip ip-prefix CUST-AS${asn}-${nomeCliente.toUpperCase()}-V4 index 10 permit ${ipv4PublicoAddress} ${ipv4PublicoMask} less-equal 24\n`;
+            
+            if (ipv6Publico) {
+                const ipv6PublicoParts = ipv6Publico.split('/');
+                const ipv6PublicoAddress = ipv6PublicoParts[0];
+                const ipv6PublicoMask = ipv6PublicoParts[1] || '32';
+                
+                configuracoes += `ipv6 prefix-list CUST-AS${asn}-${nomeCliente.toUpperCase()}-V6 index 10 permit ${ipv6PublicoAddress} ${ipv6PublicoMask} less-equal 48\n\n`;
+            }
+            
+            // Route-policies
+            configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN permit node 1\n`;
+            configuracoes += ` if-match ip-prefix REDE-P-BLACKHOLE\n`;
+            configuracoes += ` apply ip-address next-hop 192.0.2.0\n`;
+            configuracoes += ` apply local-preference ${lpPrimary}\n`;
+            configuracoes += ` apply community 65269:666\n`;
+            configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN permit node 30\n`;
+            configuracoes += ` if-match ip-prefix CUST-AS${asn}-${nomeCliente.toUpperCase()}-V4\n`;
+            configuracoes += ` apply community 65267:65535 65267:64000 65268:55001 65269:10001 65269:10002 65269:65001 additive\n`;
+            configuracoes += ` apply local-preference ${lpPrimary}\n`;
+            configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN deny node 100\n\n`;
+            
+            if (ipv6Publico) {
+                configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 permit node 35\n`;
+                configuracoes += ` if-match ipv6 address prefix-list CUST-AS${asn}-${nomeCliente.toUpperCase()}-V6\n`;
+                configuracoes += ` apply community 65267:65535 65267:64000 65268:55001 65269:10001 65269:10002 65269:65001 additive\n`;
+                configuracoes += ` apply local-preference ${lpPrimary}\n`;
+                configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 deny node 100\n\n`;
+            }
+            
+            // Configuração BGP
+            const ipv4ClientAddress = vlanDiferente ? ipv4ClientV4.split('/')[0] : ipv4Client.split('/')[0];
+            const ipv6ClientAddress = ipv6Publico ? (vlanDiferente ? ipv6ClientV6.split('/')[0] : ipv6Client.split('/')[0]) : null;
+            
+            configuracoes += `bgp 265269\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} as-number ${asn}\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} description BGP-CUST-${asn}-${nomeCliente.toUpperCase()}\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} connect-interface ${vlanDiferente ? interfaceV4 : interface}\n`;
+            
+            if (ipv6ClientAddress) {
+                configuracoes += ` peer ${ipv6ClientAddress} as-number ${asn}\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} description BGP-CUST-${asn}-${nomeCliente.toUpperCase()}\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} connect-interface ${vlanDiferente ? interfaceV6 : interface}\n`;
+            }
+            
+            configuracoes += `\nipv4-family unicast\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} enable\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN import\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} route-policy TABELA-FULLROUTING-OUT export\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} route-limit 100 idle-timeout 5\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} next-hop-local\n`;
+            configuracoes += ` peer ${ipv4ClientAddress} default-route-advertise\n`;
+            
+            if (ipv6ClientAddress) {
+                configuracoes += `quit\n\nipv6-family unicast\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} enable\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 import\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} route-policy TABELA-FULLROUTING-OUT-V6 export\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} route-limit 100 idle-timeout 5\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} next-hop-local\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} advertise-community\n`;
+                configuracoes += ` peer ${ipv6ClientAddress} default-route-advertise\n`;
+            }
+            
+            configuracoes += `quit`;
+
+            // Exibir resultados
+            document.getElementById('facilidades').textContent = facilidades;
+            document.getElementById('configuracoes').textContent = configuracoes;
+        }
+        
+        // Função para converter CIDR para máscara de rede
+        function cidrToNetmask(cidr) {
+            cidr = parseInt(cidr);
+            const mask = [];
+            for (let i = 0; i < 4; i++) {
+                const n = Math.min(cidr, 8);
+                mask.push(256 - Math.pow(2, 8 - n));
+                cidr -= n;
+            }
+            return mask.join('.');
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const textToCopy = element.textContent;
+            
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    // Feedback visual
+                    const copyBtn = element.nextElementSibling;
+                    const originalText = copyBtn.innerHTML;
+                    
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    copyBtn.style.backgroundColor = '#3aa142';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.backgroundColor = '';
+                    }, 2000);
+                })
+                .catch(err => {
+                    alert('Erro ao copiar: ' + err);
+                });
+        }
+    </script>
+</body>
+</html>
