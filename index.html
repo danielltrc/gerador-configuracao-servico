@@ -14,6 +14,7 @@
             --light: #f8f9fa;
             --gray: #6c757d;
             --success: #4bb543;
+            --observations-bg: #fff9e6;
         }
         
         * {
@@ -116,7 +117,7 @@
             margin-right: 10px;
         }
         
-        #facilidades, #configuracoes {
+        #facilidades, #configuracoes, #observacoes {
             white-space: pre-wrap;
             font-family: 'Courier New', monospace;
             padding: 15px;
@@ -124,6 +125,11 @@
             border-radius: 4px;
             border-left: 4px solid var(--primary);
             margin-top: 10px;
+        }
+
+        #observacoes {
+            background-color: var(--observations-bg);
+            border-left: 4px solid #ffcc00;
         }
         
         .copy-btn {
@@ -244,8 +250,23 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="description">Descrição</label>
-                    <input type="text" id="description" placeholder="Ex: CUST.ISP.IPD.TECTEL#35043" required>
+                    <label for="client-type">Tipo de Cliente</label>
+                    <select id="client-type" required>
+                        <option value="">Selecione</option>
+                        <option value="CORPORATIVO">CORPORATIVO</option>
+                        <option value="ISP">ISP</option>
+                        <option value="GOVERNAMENTAL">GOVERNAMENTAL</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="client-name">Nome do Cliente</label>
+                    <input type="text" id="client-name" placeholder="Ex: TECTEL" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-number">N° Task</label>
+                    <input type="text" id="task-number" placeholder="Ex: 35043" required>
                 </div>
             </div>
 
@@ -337,7 +358,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="l2l-regional">Regional</label>
+                    <label for="l2l-regional">LAST MILE</label>
                     <input type="text" id="l2l-regional" placeholder="Ex: MA.MIR.REGIONAL.MIRANDA.001" required>
                 </div>
                 
@@ -347,8 +368,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="l2l-description">Descrição</label>
-                    <input type="text" id="l2l-description" placeholder="Ex: CUST.ISP.L2L.TECTEL#35043" required>
+                    <label for="l2l-client-name">Nome do Cliente</label>
+                    <input type="text" id="l2l-client-name" placeholder="Ex: TECTEL" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="l2l-task-number">N° Task</label>
+                    <input type="text" id="l2l-task-number" placeholder="Ex: 35043" required>
                 </div>
             </div>
 
@@ -530,6 +556,17 @@
                 <i class="fas fa-copy"></i> Copiar Configurações
             </button>
         </div>
+
+        <!-- Seção de Observações (nova seção) -->
+        <div class="result-section" id="observacoes-section" style="display: none;">
+            <div class="result-title">
+                <i class="fas fa-info-circle"></i> Observações
+            </div>
+            <div id="observacoes"></div>
+            <button class="copy-btn" onclick="copyToClipboard('observacoes')">
+                <i class="fas fa-copy"></i> Copiar Observações
+            </button>
+        </div>
     </div>
 
     <script>
@@ -580,7 +617,13 @@
             const regional = document.getElementById('regional').value;
             const vlanId = document.getElementById('vlan-id').value;
             const deliveryMode = document.getElementById('delivery-mode').value;
-            const description = document.getElementById('description').value;
+            const clientType = document.getElementById('client-type').value;
+            const clientName = document.getElementById('client-name').value;
+            const taskNumber = document.getElementById('task-number').value;
+            
+            // Gerar descrição no padrão solicitado (3 primeiras letras do tipo de cliente)
+            const clientTypeShort = clientType.substring(0, 3);
+            const description = `CUST.${clientTypeShort}.IPD.${clientName.toUpperCase()}#${taskNumber}`;
             
             // Ponta A
             const equipmentA = document.getElementById('equipment-a').value;
@@ -602,7 +645,7 @@
             
             // Validar campos obrigatórios
             const requiredFields = [
-                regional, vlanId, description,
+                regional, vlanId, clientType, clientName, taskNumber,
                 equipmentA, ipPontaA, interfaceA,
                 equipmentB, ipPontaB, interfaceB,
                 ipv4Megalink, ipv4Client, publicIp
@@ -630,7 +673,8 @@
             facilidades += `Banda contratada: ${bandwidth || 'Não especificado'}\n\n`;
             facilidades += `Regional: ${regional}\n`;
             facilidades += `VLAN ID: ${vlanId}\n`;
-            facilidades += `Modo de Entrega: ${deliveryMode}\n\n`;
+            facilidades += `Modo de Entrega: ${deliveryMode}\n`;
+            facilidades += `Tipo de Cliente: ${clientType}\n\n`;
             
             facilidades += `PONTA A:\n`;
             facilidades += `Equipamento: ${equipmentA}\n`;
@@ -731,6 +775,41 @@ interface ${interfaceB}
             // Exibir resultados
             document.getElementById('facilidades').textContent = facilidades;
             document.getElementById('configuracoes').textContent = configuracoes;
+            
+            // Gerar observações
+            const observacoes = `Ao finalizar o transporte, sempre verifique o sem o transporte está UP com o seguinte comando: 
+
+display mpls l2vc interface vlan ${vlanId}
+
+Caso a linha VC STATE esteja DOWN, realize o seguinte procedimento:
+
+1 - Verifique o status da INTERFACE FÍSICA com o comando:
+display interface description | include CUST.${clientName.toUpperCase()}
+
+Caso a interface fisica esteja UP e o transport DOWN, verifique se há o remote-peer cadastrado no equipemento:
+
+NA PONTA A:
+display mpls ldp remote-peer ${ipPontaB}
+
+caso não mostre nada, dê o seguinte comando para adicionar o remote-peer:
+
+ mpls ldp remote-peer ${ipPontaB}
+ remote-ip ${ipPontaB}
+
+
+NA PONTA B:
+display mpls ldp remote-peer ${ipPontaA}
+
+caso não mostra nada, dê o seguinte comando para adicionar o remote-peer:
+
+ mpls ldp remote-peer ${ipPontaA}
+ remote-ip ${ipPontaA}
+
+
+Verifique se o IP remoto está correto e se o LDP session está estabelecido com o peer. Caso contrário, revisar conectividade IP e permissões de LDP (ACLs, filtros etc.).`;
+
+            document.getElementById('observacoes').textContent = observacoes;
+            document.getElementById('observacoes-section').style.display = 'block';
         }
         
         function generateL2LConfig() {
@@ -738,7 +817,11 @@ interface ${interfaceB}
             const bandwidth = document.getElementById('l2l-bandwidth').value;
             const regional = document.getElementById('l2l-regional').value;
             const vlanId = document.getElementById('l2l-vlan-id').value;
-            const description = document.getElementById('l2l-description').value;
+            const clientName = document.getElementById('l2l-client-name').value;
+            const taskNumber = document.getElementById('l2l-task-number').value;
+            
+            // Gerar descrição no padrão solicitado
+            const description = `CUST.L2L.${clientName.toUpperCase()}#${taskNumber}`;
             
             // Ponta A
             const equipmentA = document.getElementById('l2l-equipment-a').value;
@@ -752,7 +835,7 @@ interface ${interfaceB}
             
             // Validar campos obrigatórios
             const requiredFields = [
-                bandwidth, regional, vlanId, description,
+                bandwidth, regional, vlanId, clientName, taskNumber,
                 equipmentA, ipPontaA, interfaceA,
                 equipmentB, ipPontaB, interfaceB
             ];
@@ -767,7 +850,7 @@ interface ${interfaceB}
             // =============================================
             let facilidades = `TRANSPORTE L2L\n\n`;
             facilidades += `Banda contratada: ${bandwidth}\n\n`;
-            facilidades += `Regional: ${regional}\n`;
+            facilidades += `LAST MILE: ${regional}\n`;
             facilidades += `VLAN ID: ${vlanId}\n\n`;
             
             facilidades += `PONTA A:\n`;
@@ -833,6 +916,41 @@ interface ${interfaceB}
             // Exibir resultados
             document.getElementById('facilidades').textContent = facilidades;
             document.getElementById('configuracoes').textContent = configuracoes;
+            
+            // Gerar observações
+            const observacoes = `Ao finalizar o transporte, sempre verifique o sem o transporte está UP com o seguinte comando: 
+
+display mpls l2vc interface vlan ${vlanId}
+
+Caso a linha VC STATE esteja DOWN, realize o seguinte procedimento:
+
+1 - Verifique o status da INTERFACE FÍSICA com o comando:
+display interface description | include CUST.${clientName.toUpperCase()}
+
+Caso a interface fisica esteja UP e o transport DOWN, verifique se há o remote-peer cadastrado no equipemento:
+
+NA PONTA A:
+display mpls ldp remote-peer ${ipPontaB}
+
+caso não mostra nada, dê o seguinte comando para adicionar o remote-peer:
+
+ mpls ldp remote-peer ${ipPontaB}
+ remote-ip ${ipPontaB}
+
+
+NA PONTA B:
+display mpls ldp remote-peer ${ipPontaA}
+
+caso não mostra nada, dê o seguinte comando para adicionar o remote-peer:
+
+ mpls ldp remote-peer ${ipPontaA}
+ remote-ip ${ipPontaA}
+
+
+Verifique se o IP remoto está correto e se o LDP session está estabelecido com o peer. Caso contrário, revisar conectividade IP e permissões de LDP (ACLs, filtros etc.).`;
+
+            document.getElementById('observacoes').textContent = observacoes;
+            document.getElementById('observacoes-section').style.display = 'block';
         }
         
         function generateTransitoIPConfig() {
@@ -1054,6 +1172,7 @@ interface ${interfaceB}
             // Exibir resultados
             document.getElementById('facilidades').textContent = facilidades;
             document.getElementById('configuracoes').textContent = configuracoes;
+            document.getElementById('observacoes-section').style.display = 'none';
         }
         
         // Função para converter CIDR para máscara de rede
