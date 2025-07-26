@@ -247,11 +247,6 @@
                     <label for="description">Descrição</label>
                     <input type="text" id="description" placeholder="Ex: CUST.ISP.IPD.TECTEL#35043" required>
                 </div>
-                
-                <div class="form-group optional-field">
-                    <label for="observacoes">Observações</label>
-                    <textarea id="observacoes" placeholder="Informações adicionais relevantes"></textarea>
-                </div>
             </div>
 
             <div class="two-columns">
@@ -355,11 +350,6 @@
                     <label for="l2l-description">Descrição</label>
                     <input type="text" id="l2l-description" placeholder="Ex: CUST.ISP.L2L.TECTEL#35043" required>
                 </div>
-                
-                <div class="form-group optional-field">
-                    <label for="l2l-observacoes">Observações</label>
-                    <textarea id="l2l-observacoes" placeholder="Informações adicionais relevantes"></textarea>
-                </div>
             </div>
 
             <div class="two-columns">
@@ -418,8 +408,8 @@
                     <input type="text" id="transito-nome" placeholder="Ex: SMARTNET" required>
                 </div>
                 <div class="form-group">
-                    <label for="transito-descricao">Descrição:</label>
-                    <input type="text" id="transito-descricao" placeholder="Ex: CUST.ISP.IPT.AS270578#1234567" required>
+                    <label for="transito-descricao">N° Task:</label>
+                    <input type="text" id="transito-descricao" placeholder="Ex: 1234567" required>
                 </div>
                 <div class="form-group">
                     <label for="transito-vlan-diferente">
@@ -503,22 +493,14 @@
             </div>
 
             <div class="form-section">
-                <h3>POLÍTICAS DE ROTEAMENTO</h3>
+                <h3>BLOCO(S) DE IP</h3>
                 <div class="form-group">
-                    <label for="transito-lp-primary">Local Preference (Primário):</label>
-                    <input type="text" id="transito-lp-primary" value="8000" required>
-                </div>
-                <div class="form-group">
-                    <label for="transito-lp-secondary">Local Preference (Secundário):</label>
-                    <input type="text" id="transito-lp-secondary" value="7900" required>
-                </div>
-                <div class="form-group">
-                    <label for="transito-ipv4-publico">Bloco IPv4 Público:</label>
-                    <input type="text" id="transito-ipv4-publico" placeholder="Ex: 177.129.32.0/22" required>
+                    <label for="transito-ipv4-publico">Bloco(s) IPv4 Público(s) (separados por vírgula):</label>
+                    <input type="text" id="transito-ipv4-publico" placeholder="Ex: 177.129.32.0/22, 177.129.36.0/24" required>
                 </div>
                 <div class="form-group optional-field">
-                    <label for="transito-ipv6-publico">Bloco IPv6 Público:</label>
-                    <input type="text" id="transito-ipv6-publico" placeholder="Ex: 2804:6e24::/32">
+                    <label for="transito-ipv6-publico">Bloco(s) IPv6 Público(s) (separados por vírgula):</label>
+                    <input type="text" id="transito-ipv6-publico" placeholder="Ex: 2804:6e24::/32, 2804:6e25::/48">
                 </div>
             </div>
         </div>
@@ -599,7 +581,6 @@
             const vlanId = document.getElementById('vlan-id').value;
             const deliveryMode = document.getElementById('delivery-mode').value;
             const description = document.getElementById('description').value;
-            const observacoes = document.getElementById('observacoes').value;
             
             // Ponta A
             const equipmentA = document.getElementById('equipment-a').value;
@@ -670,10 +651,6 @@
             if (ipv6Publico) facilidades += `IP Público IPv6: ${ipv6Publico}\n\n`;
             
             facilidades += `Descrição: ${description}`;
-            
-            if (observacoes) {
-                facilidades += `\n\nObservações:\n${observacoes}`;
-            }
             
             // =============================================
             // GERAR CONFIGURAÇÕES TÉCNICAS (Huawei)
@@ -762,7 +739,6 @@ interface ${interfaceB}
             const regional = document.getElementById('l2l-regional').value;
             const vlanId = document.getElementById('l2l-vlan-id').value;
             const description = document.getElementById('l2l-description').value;
-            const observacoes = document.getElementById('l2l-observacoes').value;
             
             // Ponta A
             const equipmentA = document.getElementById('l2l-equipment-a').value;
@@ -805,10 +781,6 @@ interface ${interfaceB}
             facilidades += `Interface: ${interfaceB}\n\n`;
             
             facilidades += `Descrição: ${description}`;
-            
-            if (observacoes) {
-                facilidades += `\n\nObservações:\n${observacoes}`;
-            }
             
             // =============================================
             // GERAR CONFIGURAÇÕES TÉCNICAS (Huawei)
@@ -868,12 +840,15 @@ interface ${interfaceB}
             const banda = document.getElementById('transito-banda').value;
             const asn = document.getElementById('transito-asn').value;
             const nomeCliente = document.getElementById('transito-nome').value;
-            const descricao = document.getElementById('transito-descricao').value;
+            const taskNumber = document.getElementById('transito-descricao').value;
             const vlanDiferente = document.getElementById('transito-vlan-diferente').checked;
-            const lpPrimary = document.getElementById('transito-lp-primary').value;
-            const lpSecondary = document.getElementById('transito-lp-secondary').value;
             const ipv4Publico = document.getElementById('transito-ipv4-publico').value;
             const ipv6Publico = document.getElementById('transito-ipv6-publico').value;
+            
+            // Gerar descrições no padrão solicitado
+            const descricaoGeral = `CUST.ISP.IPT.AS${asn}.${nomeCliente.toUpperCase()}#${taskNumber}`;
+            const descricaoV4 = `CUST.ISP.IPT.V4.AS${asn}.${nomeCliente.toUpperCase()}#${taskNumber}`;
+            const descricaoV6 = `CUST.ISP.IPT.V6.AS${asn}.${nomeCliente.toUpperCase()}#${taskNumber}`;
             
             // Configurações para VLAN única ou separadas
             let interface, vlan, ipv4Megalink, ipv4Client, ipv6Megalink, ipv6Client;
@@ -900,7 +875,7 @@ interface ${interfaceB}
             }
 
             // Validar campos obrigatórios
-            let requiredFields = [banda, asn, nomeCliente, descricao, lpPrimary, lpSecondary, ipv4Publico];
+            let requiredFields = [banda, asn, nomeCliente, taskNumber, ipv4Publico];
             
             if (vlanDiferente) {
                 requiredFields = requiredFields.concat([
@@ -948,11 +923,10 @@ interface ${interfaceB}
                 if (ipv6Client) facilidades += `IPv6 P2P Cliente: ${ipv6Client}\n\n`;
             }
             
-            facilidades += `Bloco IPv4 Público: ${ipv4Publico}\n`;
-            if (ipv6Publico) facilidades += `Bloco IPv6 Público: ${ipv6Publico}\n`;
+            facilidades += `Bloco(s) IPv4 Público(s): ${ipv4Publico}\n`;
+            if (ipv6Publico) facilidades += `Bloco(s) IPv6 Público(s): ${ipv6Publico}\n`;
             
-            facilidades += `Local Preference: Primário ${lpPrimary} | Secundário ${lpSecondary}\n\n`;
-            facilidades += `Descrição: ${descricao}`;
+            facilidades += `\nDescrição: ${vlanDiferente ? `${descricaoV4}\n${descricaoV6}` : descricaoGeral}`;
 
             // =============================================
             // GERAR CONFIGURAÇÕES TÉCNICAS
@@ -963,7 +937,7 @@ interface ${interfaceB}
             if (vlanDiferente) {
                 configuracoes += `interface ${interfaceV4}\n`;
                 configuracoes += ` vlan-type dot1q ${vlanV4}\n`;
-                configuracoes += ` description ${descricao} - IPv4\n`;
+                configuracoes += ` description ${descricaoV4}\n`;
                 configuracoes += ` ip address ${ipv4MegalinkV4}\n`;
                 configuracoes += ` statistic enable\n`;
                 configuracoes += ` ip urpf loose allow-default\n`;
@@ -971,7 +945,7 @@ interface ${interfaceB}
                 
                 configuracoes += `interface ${interfaceV6}\n`;
                 configuracoes += ` vlan-type dot1q ${vlanV6}\n`;
-                configuracoes += ` description ${descricao} - IPv6\n`;
+                configuracoes += ` description ${descricaoV6}\n`;
                 configuracoes += ` ipv6 enable\n`;
                 configuracoes += ` ipv6 address ${ipv6MegalinkV6}\n`;
                 configuracoes += ` statistic enable\n`;
@@ -980,7 +954,7 @@ interface ${interfaceB}
             } else {
                 configuracoes += `interface ${interface}\n`;
                 configuracoes += ` vlan-type dot1q ${vlan}\n`;
-                configuracoes += ` description ${descricao}\n`;
+                configuracoes += ` description ${descricaoGeral}\n`;
                 configuracoes += ` ipv6 enable\n`;
                 configuracoes += ` ip address ${ipv4Megalink}\n`;
                 if (ipv6Megalink) {
@@ -994,38 +968,48 @@ interface ${interfaceB}
                 configuracoes += ` tcp adjust-mss 1400 inbound\n\n`;
             }
             
-            // Prefix-lists
-            const ipv4PublicoParts = ipv4Publico.split('/');
-            const ipv4PublicoAddress = ipv4PublicoParts[0];
-            const ipv4PublicoMask = ipv4PublicoParts[1] || '22';
+            // Prefix-lists para múltiplos blocos
+            const ipv4Blocks = ipv4Publico.split(',').map(block => block.trim());
+            const ipv6Blocks = ipv6Publico ? ipv6Publico.split(',').map(block => block.trim()) : [];
             
-            configuracoes += `ip ip-prefix CUST-AS${asn}-${nomeCliente.toUpperCase()}-V4 index 10 permit ${ipv4PublicoAddress} ${ipv4PublicoMask} less-equal 24\n`;
+            // Gerar prefix-lists para IPv4
+            configuracoes += `! Prefix-lists IPv4\n`;
+            ipv4Blocks.forEach((block, index) => {
+                const parts = block.split('/');
+                const address = parts[0];
+                const mask = parts[1] || '24';
+                configuracoes += `ip ip-prefix CUST-AS${asn}-${nomeCliente.toUpperCase()}-V4 index ${index + 10} permit ${address} ${mask} less-equal 24\n`;
+            });
             
-            if (ipv6Publico) {
-                const ipv6PublicoParts = ipv6Publico.split('/');
-                const ipv6PublicoAddress = ipv6PublicoParts[0];
-                const ipv6PublicoMask = ipv6PublicoParts[1] || '32';
-                
-                configuracoes += `ipv6 prefix-list CUST-AS${asn}-${nomeCliente.toUpperCase()}-V6 index 10 permit ${ipv6PublicoAddress} ${ipv6PublicoMask} less-equal 48\n\n`;
+            // Gerar prefix-lists para IPv6 se existirem
+            if (ipv6Blocks.length > 0) {
+                configuracoes += `\n! Prefix-lists IPv6\n`;
+                ipv6Blocks.forEach((block, index) => {
+                    const parts = block.split('/');
+                    const address = parts[0];
+                    const mask = parts[1] || '48';
+                    configuracoes += `ipv6 prefix-list CUST-AS${asn}-${nomeCliente.toUpperCase()}-V6 index ${index + 10} permit ${address} ${mask} less-equal 48\n`;
+                });
             }
             
             // Route-policies
-            configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN permit node 1\n`;
+            configuracoes += `\nroute-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN permit node 1\n`;
             configuracoes += ` if-match ip-prefix REDE-P-BLACKHOLE\n`;
             configuracoes += ` apply ip-address next-hop 192.0.2.0\n`;
-            configuracoes += ` apply local-preference ${lpPrimary}\n`;
             configuracoes += ` apply community 65269:666\n`;
+            
+            // Route-policy única para IPv4 que engloba todos os blocos
             configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN permit node 30\n`;
             configuracoes += ` if-match ip-prefix CUST-AS${asn}-${nomeCliente.toUpperCase()}-V4\n`;
             configuracoes += ` apply community 65267:65535 65267:64000 65268:55001 65269:10001 65269:10002 65269:65001 additive\n`;
-            configuracoes += ` apply local-preference ${lpPrimary}\n`;
+            
             configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN deny node 100\n\n`;
             
-            if (ipv6Publico) {
+            // Route-policy única para IPv6 se existirem
+            if (ipv6Blocks.length > 0) {
                 configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 permit node 35\n`;
                 configuracoes += ` if-match ipv6 address prefix-list CUST-AS${asn}-${nomeCliente.toUpperCase()}-V6\n`;
                 configuracoes += ` apply community 65267:65535 65267:64000 65268:55001 65269:10001 65269:10002 65269:65001 additive\n`;
-                configuracoes += ` apply local-preference ${lpPrimary}\n`;
                 configuracoes += `route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 deny node 100\n\n`;
             }
             
@@ -1055,7 +1039,9 @@ interface ${interfaceB}
             if (ipv6ClientAddress) {
                 configuracoes += `quit\n\nipv6-family unicast\n`;
                 configuracoes += ` peer ${ipv6ClientAddress} enable\n`;
-                configuracoes += ` peer ${ipv6ClientAddress} route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 import\n`;
+                if (ipv6Blocks.length > 0) {
+                    configuracoes += ` peer ${ipv6ClientAddress} route-policy CUST-AS${asn}-${nomeCliente.toUpperCase()}-IN-V6 import\n`;
+                }
                 configuracoes += ` peer ${ipv6ClientAddress} route-policy TABELA-FULLROUTING-OUT-V6 export\n`;
                 configuracoes += ` peer ${ipv6ClientAddress} route-limit 100 idle-timeout 5\n`;
                 configuracoes += ` peer ${ipv6ClientAddress} next-hop-local\n`;
