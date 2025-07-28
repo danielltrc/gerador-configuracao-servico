@@ -777,7 +777,7 @@ interface ${interfaceB}
             document.getElementById('configuracoes').textContent = configuracoes;
             
             // Gerar observações
-            const observacoes = `Ao finalizar o transporte, sempre verifique o sem o transporte está UP com o seguinte comando: 
+            const observacoes = `Ao finalizar as configurações, sempre verifique  se o transporte está UP com o seguinte comando: 
 
 display mpls l2vc interface vlan ${vlanId}
 
@@ -800,7 +800,7 @@ caso não mostre nada, dê o seguinte comando para adicionar o remote-peer:
 NA PONTA B:
 display mpls ldp remote-peer ${ipPontaA}
 
-caso não mostra nada, dê o seguinte comando para adicionar o remote-peer:
+caso não mostre nada, dê o seguinte comando para adicionar o remote-peer:
 
  mpls ldp remote-peer ${ipPontaA}
  remote-ip ${ipPontaA}
